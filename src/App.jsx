@@ -1,57 +1,83 @@
-import { useState } from 'react'
-import './App.css'
-import Logo from './assets/yitaqi.png';
+import { useState, useRef } from 'react'
+import {
+  Button, Container, Row, Col,
+} from 'react-bootstrap'; // Import the Button component from the appropriate library
+
+import { Form } from 'react-bootstrap';
+import productList from './accessoryproducts.json'
+import DataTable from './components/DataTable';
+
 
 function App() {
-  const [vat, setvat] = useState(0)
-  const [price, setprice] = useState(0)
-  const [discount, setdiscount] = useState(0)
+  
+  const pRef = useRef()
+  const qRef = useRef()
+  const [price, setPrice] = useState(productList[0].price)
+
+  const [selectedItems, setSelectedItems] = useState([])
   
 
-  function handle(e) {
-    let p = parseFloat(e.target.value) || 0
+  const handleAdd = (e) => {
+    const pid = pRef.current.value
+    const product = productList.find(p => p.id == pid)
+    const q = qRef.current.value
+    selectedItems.push({
+      ...product,
+      qty: q
+    })
+    console.table(selectedItems)
+    setSelectedItems([...selectedItems])
+  }
+
+  const handleProductChanged = (e) => {
+    const pid = e.target.value
+    const product = productList.find(p => p.id == pid)
+    const p = product.price
     console.log(p)
-    setprice(p)
-    count1(p,discount)
-  }
-
-  function discount1(i) {
-    let d = parseFloat(i.target.value) || 0
-    console.log(d)
-    setdiscount(d)
-    count1(price,d)
-  }
-
-  function count1(price,discount) {
-    let result = price - discount
-    let v = result * 0.07
-    setvat(v.toFixed(2))
-   
+    setPrice(p)
   }
 
   return (
     <>
-      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <img src={Logo} alt="Logo" style={{ height: '200px' }} />
-      </div>
+      <Container>
+        <Row>
+          <Col xs={2}>
+            <span>Product:</span>
+          </Col>
+          <Col>
+            <Form.Select ref={pRef} onChange={handleProductChanged}>
+              {
+                productList.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))
+              }
+            </Form.Select>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={2}>
+            Price:
+          </Col>
+          <Col>
+            {price}
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={2}>
+            <span>Quantity:</span>
+          </Col>
+          <Col>
+            <input type="number" ref={qRef}
+              defaultValue={1} />
+          </Col>
+        </Row>
+        <Button variant="secondary" onClick={handleAdd}>Add</Button>
 
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <p style={{ marginRight: '40px' }}>Price</p>
-        <input onChange={handle} type = "number" style = {{fontSize:"20pt"}}/>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <p style={{ marginRight: '14px' }}>Discount</p>
-        <input onChange={discount1} type = "number" style = {{fontSize:"20pt"}}/>
-      </div>
-
-      <p>Gross Price= {price}</p>
-      <p>VAT= {vat}</p>
-
-      
-
+        <DataTable data={selectedItems} />
+      </Container>
     </>
   )
+
 }
 
 export default App
